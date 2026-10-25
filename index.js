@@ -67,7 +67,12 @@ class WorkflowEngine {
     // Workflow Status
     app.get('/api/workflow/status', async (req, res) => {
       try {
-        const stats = await this.comfyClient.getSystemStats();
+        let stats = null;
+        try {
+          stats = await this.comfyClient.getSystemStats();
+        } catch (_comfyErr) {
+          stats = null;
+        }
         res.json({
           success: true,
           comfyConnected: Boolean(stats),
