@@ -23,12 +23,18 @@ class PublishingSchedulingAgent {
 
   async setupYouTubeAPI() {
     try {
-      const auth = this.credentials.getYouTubeAuth();
-      this.youtube = google.youtube({ version: 'v3', auth });
-      this.logger.info('YouTube API initialized');
+      if (this.credentials && typeof this.credentials.getYouTubeAuth === 'function') {
+        const auth = this.credentials.getYouTubeAuth();
+        this.youtube = google.youtube({ version: 'v3', auth });
+        this.logger.info('YouTube API client initialized with authorized OAuth2 client');
+      } else if (this.credentials && typeof this.credentials.getYouTubeClient === 'function') {
+        this.youtube = this.credentials.getYouTubeClient();
+        this.logger.info('YouTube API client initialized');
+      } else {
+        this.logger.info('YouTube channel not yet authorized. Run OAuth setup before publishing.');
+      }
     } catch (error) {
-      this.logger.error('Failed to initialize YouTube API:', error);
-      throw error;
+      this.logger.warn(`YouTube API client initialization note: ${error.message}`);
     }
   }
 
@@ -163,14 +169,17 @@ class PublishingSchedulingAgent {
         if (scheduleEntry.uploadAttempted && this.isUploadOutcomeUnknown(error)) {
           scheduleEntry.status = 'reconciliation_required';
           scheduleEntry.error = 'Upload outcome is unknown; verify the YouTube channel before retrying';
-          await this.db.updateScheduleEntry(scheduleEntry);
+          if (this.db?.updateScheduleEntry) await this.db.updateScheduleEntry(scheduleEntry);
           await this.syncShortStatus(scheduleEntry, 'reconciliation_required', scheduleEntry.error);
-          error.code = 'UPLOAD_OUTCOME_UNKNOWN';
-          error.status = 409;
+          const outcomeError = new Error('Upload outcome is unknown; verify the YouTube channel before retrying');
+          outcomeError.code = 'UPLOAD_OUTCOME_UNKNOWN';
+          outcomeError.status = 409;
+          outcomeError.cause = error;
+          throw outcomeError;
         } else {
           scheduleEntry.status = 'failed';
           scheduleEntry.error = error.message;
-          await this.db.updateScheduleEntry(scheduleEntry);
+          if (this.db?.updateScheduleEntry) await this.db.updateScheduleEntry(scheduleEntry);
           await this.syncShortStatus(scheduleEntry, 'failed', error.message);
         }
         throw error;
@@ -225,24 +234,45 @@ class PublishingSchedulingAgent {
     };
     if (futureSchedule) videoMetadata.status.publishAt = scheduleEntry.publishTime;
     
+    if (!this.youtube) {
+      await this.setupYouTubeAPI();
+    }
+    if (!this.youtube) {
+      const err = new Error('YouTube channel is not connected. Connect your channel via /api/youtube/auth-url or node cli.js --auth-youtube.');
+      err.status = 401;
+      err.code = 'YOUTUBE_NOT_AUTHORIZED';
+      throw err;
+    }
+
     // Resolve the file before marking the network upload as attempted.
     const videoStream = await this.getVideoStream(metadata.video.path);
     scheduleEntry.uploadAttempted = true;
-    const videoUpload = await this.youtube.videos.insert({
-      part: 'snippet,status',
-      requestBody: videoMetadata,
-      media: {
-        body: videoStream
+    let videoUpload;
+    try {
+      videoUpload = await this.youtube.videos.insert({
+        part: 'snippet,status',
+        requestBody: videoMetadata,
+        media: {
+          body: videoStream
+        }
+      });
+    } catch (uploadError) {
+      if (videoStream && typeof videoStream.destroy === 'function') {
+        try { videoStream.destroy(); } catch (_) {}
       }
-    });
+      throw uploadError;
+    }
     
     const videoId = videoUpload.data.id;
+    if (videoStream && typeof videoStream.destroy === 'function') {
+      try { videoStream.destroy(); } catch (_) {}
+    }
     this.logger.info(`Video uploaded with ID: ${videoId}`);
     scheduleEntry.status = 'uploaded';
     scheduleEntry.youtubeId = videoId;
     scheduleEntry.youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
     scheduleEntry.error = null;
-    await this.db.updateScheduleEntry(scheduleEntry);
+    if (this.db?.updateScheduleEntry) await this.db.updateScheduleEntry(scheduleEntry);
     
     // Upload thumbnail
     if (metadata.thumbnail && metadata.thumbnail.path) {

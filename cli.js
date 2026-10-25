@@ -19,6 +19,9 @@ function parseArgs() {
     workflow: 'minimax_h3_turbo_local',
     dryRun: false,
     status: false,
+    authYoutube: false,
+    youtubeStatus: false,
+    disconnectYoutube: false,
     help: false
   };
 
@@ -32,6 +35,12 @@ function parseArgs() {
       options.dryRun = true;
     } else if (arg === '--status') {
       options.status = true;
+    } else if (arg === '--auth-youtube') {
+      options.authYoutube = true;
+    } else if (arg === '--youtube-status') {
+      options.youtubeStatus = true;
+    } else if (arg === '--disconnect-youtube') {
+      options.disconnectYoutube = true;
     } else if (arg === '--help' || arg === '-h') {
       options.help = true;
     }
@@ -52,10 +61,15 @@ Options:
   -w, --workflow <id>     Workflow to use (default: minimax_h3_turbo_local)
   --dry-run               Plan production and validate instruction without rendering
   --status                Check local ComfyUI connectivity and available workflows
+  --auth-youtube          Initiate Google OAuth 2.0 flow to connect a YouTube channel
+  --youtube-status        Display current authorized YouTube channel and permissions
+  --disconnect-youtube    Revoke and remove saved YouTube authorization tokens
   -h, --help              Show this help message
 
 Examples:
   node cli.js --status
+  node cli.js --youtube-status
+  node cli.js --auth-youtube
   node cli.js --prompt "Ancient Dravidian temple at sunrise" --dry-run
   node cli.js --prompt "Aerial view of misty mountains" --workflow minimax_h3_turbo_local
 `);
@@ -64,7 +78,9 @@ Examples:
 async function main() {
   const options = parseArgs();
 
-  if (options.help || (process.argv.length <= 2 && !options.status)) {
+  const isDirectCommand = options.status || options.authYoutube || options.youtubeStatus || options.disconnectYoutube;
+
+  if (options.help || (process.argv.length <= 2 && !isDirectCommand)) {
     printUsage();
     process.exit(0);
   }
@@ -92,6 +108,63 @@ async function main() {
       console.log(`  • [${w.id}] ${w.name}`);
     });
     console.log('');
+    process.exit(0);
+  }
+
+  // YouTube OAuth authorization command
+  if (options.authYoutube) {
+    console.log('\n🔐 YouTube Channel OAuth 2.0 Authorization');
+    try {
+      const authData = engine.youtubeAuth.generateAuthUrl();
+      console.log('\n1. Open this URL in your web browser to authorize your YouTube channel:\n');
+      console.log(`   ${authData.authUrl}\n`);
+      console.log(`2. Registered Redirect URI: ${authData.redirectUri}`);
+      console.log('3. Ensure your local server is running (`npm start`) to capture the callback,');
+      console.log('   or visit http://127.0.0.1:3456/api/youtube/auth-url while the server is active.\n');
+    } catch (err) {
+      console.error(`\n❌ Could not generate authorization URL: ${err.message}`);
+      console.error('   Ensure YOUTUBE_CLIENT_ID and YOUTUBE_CLIENT_SECRET are configured in your .env file.');
+      console.error('   See docs/youtube-api-setup.md for setup instructions.\n');
+      process.exit(1);
+    }
+    process.exit(0);
+  }
+
+  // YouTube Channel Status check
+  if (options.youtubeStatus) {
+    console.log('\n📺 Checking YouTube Channel Authorization Status:');
+    const status = await engine.youtubeAuth.getChannelStatus();
+    if (!status.configured) {
+      console.log('  • OAuth Credentials: Not Configured (Set YOUTUBE_CLIENT_ID & YOUTUBE_CLIENT_SECRET in .env)');
+    } else if (!status.connected) {
+      console.log('  • Channel Status:    Disconnected / Not Authorized');
+      console.log(`  • Message:           ${status.message}`);
+      console.log('  • Connect via:       node cli.js --auth-youtube');
+    } else {
+      console.log('  • Channel Status:    ✅ Connected');
+      if (status.channel) {
+        console.log(`  • Channel Title:     ${status.channel.title}`);
+        console.log(`  • Channel ID:        ${status.channel.id}`);
+        if (status.channel.customUrl) console.log(`  • Custom URL:        ${status.channel.customUrl}`);
+        console.log(`  • Subscribers:       ${status.channel.subscriberCount.toLocaleString()}`);
+        console.log(`  • Total Videos:      ${status.channel.videoCount.toLocaleString()}`);
+      }
+      if (status.grantedScopes) {
+        console.log(`  • Granted Scopes:    ${status.grantedScopes.join(', ')}`);
+      }
+      if (status.expiresAt) {
+        console.log(`  • Token Expires At:  ${status.expiresAt}`);
+      }
+    }
+    console.log('');
+    process.exit(0);
+  }
+
+  // YouTube Disconnect command
+  if (options.disconnectYoutube) {
+    console.log('\n🔌 Disconnecting YouTube Channel...');
+    const result = await engine.youtubeAuth.disconnect();
+    console.log(`  • ${result.message}\n`);
     process.exit(0);
   }
 

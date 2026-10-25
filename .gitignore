@@ -11,6 +11,8 @@ config/credentials.json
 config/tokens.json
 token.json
 tokens.json
+data/tokens/
+*token*.json
 *.key
 *.pem
 *.cert

@@ -9,12 +9,13 @@
   "scripts": {
     "start": "node index.js",
     "cli": "node cli.js",
-    "test": "node test/safeguards.test.js && node test/studio.test.js && node test/quality.test.js && node test/interpreter.test.js && node test/api.test.js",
+    "test": "node test/safeguards.test.js && node test/studio.test.js && node test/quality.test.js && node test/interpreter.test.js && node test/api.test.js && node test/youtube-auth.test.js",
     "test:safeguards": "node test/safeguards.test.js",
     "test:studio": "node test/studio.test.js",
     "test:quality": "node test/quality.test.js",
     "test:interpreter": "node test/interpreter.test.js",
-    "test:api": "node test/api.test.js"
+    "test:api": "node test/api.test.js",
+    "test:youtube": "node test/youtube-auth.test.js"
   },
   "keywords": [
     "comfyui",

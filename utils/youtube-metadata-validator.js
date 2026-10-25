@@ -36,8 +36,8 @@ function normalizeTags(input) {
 function normalizeYouTubeMetadata(metadata = {}) {
   const snippet = metadata.snippet || metadata.seo || metadata;
   return {
-    title: cleanText(snippet.title).slice(0, MAX_TITLE_LENGTH),
-    description: removeControlCharacters(snippet.description).slice(0, MAX_DESCRIPTION_LENGTH).trim(),
+    title: cleanText(snippet.title),
+    description: removeControlCharacters(snippet.description).trim(),
     tags: normalizeTags(snippet.tags),
     categoryId: String(snippet.categoryId ?? snippet.metadata?.category ?? '22').trim(),
     defaultLanguage: String(snippet.defaultLanguage ?? snippet.metadata?.language ?? 'en').trim(),
