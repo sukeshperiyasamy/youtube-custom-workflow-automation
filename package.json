@@ -1,0 +1,48 @@
+{
+  "name": "youtube-custom-workflow-automation",
+  "version": "1.0.0",
+  "description": "Custom autonomous AI video production workflow orchestrator integrating ComfyUI, MiniMax H3 W6A8 video diffusion, FFmpeg assembly, quality gate verification, and YouTube publishing safeguards",
+  "main": "index.js",
+  "bin": {
+    "workflow-cli": "./cli.js"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "cli": "node cli.js",
+    "test": "node test/safeguards.test.js && node test/studio.test.js && node test/quality.test.js && node test/interpreter.test.js",
+    "test:safeguards": "node test/safeguards.test.js",
+    "test:studio": "node test/studio.test.js",
+    "test:quality": "node test/quality.test.js",
+    "test:interpreter": "node test/interpreter.test.js"
+  },
+  "keywords": [
+    "comfyui",
+    "minimax-h3",
+    "video-diffusion",
+    "ai-video",
+    "orchestrator",
+    "workflow-automation",
+    "ffmpeg",
+    "youtube-automation",
+    "quality-gate"
+  ],
+  "author": "Sukesh Periyasamy",
+  "license": "MIT",
+  "dependencies": {
+    "@google/genai": "^2.9.0",
+    "axios": "^1.7.0",
+    "chalk": "^4.1.2",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "googleapis": "^173.0.0",
+    "openai": "^6.0.0",
+    "sqlite3": "^5.1.6",
+    "winston": "^3.11.0"
+  },
+  "optionalDependencies": {
+    "ffmpeg-static": "^5.2.0"
+  },
+  "engines": {
+    "node": ">=18.17.0"
+  }
+}

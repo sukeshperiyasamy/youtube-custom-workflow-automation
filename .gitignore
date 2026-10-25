@@ -1,0 +1,60 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+
+# Environment & Credentials
+.env
+.env.local
+.env.production
+config/credentials.json
+config/tokens.json
+token.json
+tokens.json
+*.key
+*.pem
+*.cert
+
+# Database & Runtime Data
+data/*.db
+data/*.sqlite
+data/*.db-journal
+*.db-shm
+*.db-wal
+data/productions/
+data/assets/
+data/audio/
+data/videos/
+data/thumbnails/
+
+# Media Files
+*.mp4
+*.mp3
+*.wav
+*.webm
+*.mkv
+*.avi
+*.jpg
+*.jpeg
+*.png
+*.gif
+!examples/*.png
+!examples/*.jpg
+
+# Logs
+logs/
+*.log
+
+# Temp & Caches
+temp/
+tmp/
+.cache/
+*.tmp
+
+# System & IDE
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
