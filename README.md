@@ -4,7 +4,7 @@
 [![Node.js Version](https://img.shields.io/badge/Node.js-%3E%3D18.17.0-brightgreen.svg)](https://nodejs.org/)
 [![ComfyUI Integration](https://img.shields.io/badge/ComfyUI-Ready-orange.svg)](https://github.com/comfyanonymous/ComfyUI)
 [![Hardware Target](https://img.shields.io/badge/GPU-RTX%204070%2012GB-76b900.svg)](https://www.nvidia.com/)
-[![Tests Passing](https://img.shields.io/badge/Tests-30%2F30%20Passing-success.svg)](#quality-assurance)
+[![Tests Passing](https://img.shields.io/badge/Tests-38%2F38%20Passing-success.svg)](#quality-assurance)
 
 An autonomous AI video production workflow orchestrator and quality-gated publishing pipeline. This project coordinates natural language instruction interpretation, multi-scene story planning, local ComfyUI video diffusion (specialized for MiniMax H3 W6A8), automated FFmpeg master assembly, rigorous technical quality checks, and YouTube publishing safeguards.
 
@@ -195,7 +195,7 @@ youtube-custom-workflow-automation/
    ```bash
    cp .env.example .env
    ```
-   Edit `.env` to configure your ComfyUI URL (default `http://127.0.0.1:8188`) and optional AI keys.
+   Edit `.env` to configure your ComfyUI URL (default `http://127.0.0.1:8188`), ComfyUI installation directory (`COMFYUI_DIR`), and optional AI keys.
 
 4. **Verify ComfyUI & Hardware Connectivity:**
    ```bash
@@ -239,12 +239,13 @@ By default, the server listens on `http://127.0.0.1:3456`.
 - `POST /api/workflow/jobs` — Create persistent generation job.
 - `GET /api/workflow/jobs/:id` — Retrieve job status and scene manifest.
 - `POST /api/workflow/jobs/:id/cancel` — Safe cancellation with state protection.
+- `POST /api/workflow/jobs/:id/approve` — Enforce rights verification and quality gates before upload.
 
 ---
 
 ## 10. Quality Assurance & Test Evidence
 
-The extracted custom workflow includes 30 independent automated tests covering safeguards, quality gates, workflow selection, and instruction sanitization.
+The extracted custom workflow includes 38 independent automated tests covering safeguards, quality gates, workflow selection, instruction sanitization, and REST API routing.
 
 Run all tests:
 ```bash
@@ -267,8 +268,10 @@ test/quality.test.js         Quality checks normalization, duration ✅ 6/6 Pass
                              shortfall blocking, 1080p probe check
 test/interpreter.test.js     XSS neutralization, script stripping,  ✅ 6/6 Passed
                              Unicode support, batch list parsing
+test/api.test.js             All 8 REST API routes & orchestration  ✅ 8/8 Passed
+                             server lifecycle (health, jobs, cancel)
 ────────────────────────────────────────────────────────────────────────────
-TOTAL                        4 Standalone Test Suites               ✅ 30/30 (100%)
+TOTAL                        5 Standalone Test Suites               ✅ 38/38 (100%)
 ════════════════════════════════════════════════════════════════════════════
 ```
 
@@ -293,11 +296,14 @@ This custom workflow is built upon and orchestrates several outstanding open-sou
 - **[FFmpeg](https://ffmpeg.org/):** Master media normalization, audio sync, and thumbnail encoding.
 - **[SQLite](https://www.sqlite.org/):** Lightweight, zero-config relational database for job and scene persistence.
 - **[Node.js](https://nodejs.org/):** Asynchronous JavaScript runtime environment.
+- **Community Workflow Credit (`minimaxH3Background_v10.json`):** Authored by community researcher **bruxosdovfx**, featuring SyncTile v5.5, 3D latent upscaler nodes (by LBH-123-AI), and background swap graphs.
 
-*We do not claim authorship of ComfyUI, FFmpeg, MiniMax models, or external YouTube APIs.*
+*We do not claim authorship of ComfyUI, FFmpeg, MiniMax models, bruxosdovfx workflows, or external YouTube APIs.*
 
 ---
 
 ## 13. License
 
-This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
+This project's custom orchestration engine, state machine, FFmpeg assembly logic, quality gates, API server, and CLI tools are licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
+
+Third-party models, node extensions, and workflow templates remain subject to the respective terms and licenses of their original authors.

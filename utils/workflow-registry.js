@@ -1,4 +1,4 @@
-﻿const fs = require('fs');
+const fs = require('fs');
 const path = require('path');
 const { Logger } = require('./logger');
 
@@ -12,7 +12,7 @@ const ASPECT_RATIO_MAP = {
 };
 
 class WorkflowRegistry {
-  constructor(comfyDir = 'D:\\comfyui') {
+  constructor(comfyDir = process.env.COMFYUI_DIR || 'D:\\comfyui') {
     this.comfyDir = path.resolve(comfyDir);
     this.logger = new Logger('WorkflowRegistry');
     this.modelsDir = path.join(this.comfyDir, 'ComfyUI', 'models');
@@ -61,6 +61,10 @@ class WorkflowRegistry {
         })
       }
     ];
+  }
+
+  listWorkflows() {
+    return this.getWorkflows();
   }
 
   get(workflowId) {

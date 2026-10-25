@@ -30,6 +30,7 @@ class WorkflowEngine {
     this.assembler = options.assembler || new ProductionAssembler();
     this.interpreter = options.interpreter || new InstructionInterpreter(options.credentials || {});
     this.qualityGate = options.qualityGate || new QualityGate();
+    this.publishingAgent = options.publishingAgent || new PublishingSchedulingAgent(this.db, options.credentials || {});
 
     this.orchestrator = new ProductionOrchestrator({
       db: this.db,
@@ -126,6 +127,18 @@ class WorkflowEngine {
     app.post('/api/workflow/jobs/:id/cancel', async (req, res) => {
       try {
         const result = await this.orchestrator.cancelJob(req.params.id);
+        res.json(result);
+      } catch (err) {
+        res.status(err.status || 500).json({ success: false, error: err.message });
+      }
+    });
+
+    // Job Approval & Publishing Safeguard Gate
+    app.post('/api/workflow/jobs/:id/approve', async (req, res) => {
+      try {
+        const { confirmRights, publishingAgent } = req.body || {};
+        const agent = publishingAgent || this.publishingAgent;
+        const result = await this.orchestrator.approveAndPublish(req.params.id, agent, { confirmRights });
         res.json(result);
       } catch (err) {
         res.status(err.status || 500).json({ success: false, error: err.message });

@@ -1,4 +1,4 @@
-﻿const { AITextService } = require('./ai-text-service');
+const { AITextService } = require('./ai-text-service');
 const { Logger } = require('./logger');
 
 class AIPlannerKeyMissingError extends Error {
@@ -58,6 +58,10 @@ class AIPlanner {
       valid: errors.length === 0,
       errors
     };
+  }
+
+  async generateProductionPlan(topic, options = {}) {
+    return this.createPlan({ prompt: topic, ...options }, options);
   }
 
   async createPlan(input = {}, options = {}) {

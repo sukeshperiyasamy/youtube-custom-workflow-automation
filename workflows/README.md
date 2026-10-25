@@ -24,7 +24,7 @@ This directory contains the verified ComfyUI workflow definitions for high-speed
 
 ## Required Checkpoints & Locations
 
-Place the following files in your ComfyUI models directory (`D:\comfyui\ComfyUI\models`):
+Place the following files in your ComfyUI models directory (`<COMFYUI_DIR>/ComfyUI/models`, default `D:\comfyui\ComfyUI\models` or configured via `COMFYUI_DIR` in `.env`):
 
 - **Diffusion UNET** (`models/diffusion_models/`):
   `minimax_h3_fl2va_pruned_w6a8.safetensors`
@@ -45,3 +45,9 @@ Ensure the ComfyUI MiniMax H3 node pack is installed, providing:
 - `CreateVideo`
 - `SaveVideo`
 - `SamplerCustomAdvanced`
+
+## Third-Party Attribution & Licensing Notice
+
+- **Community Workflow Credit (`minimaxH3Background_v10.json`):** Authored by community researcher **bruxosdovfx** featuring SyncTile v5.5, 3D latent upscaling (by LBH-123-AI), and custom background swap node graphs.
+- **Upstream Models & Nodes:** The MiniMax H3 model weights, Qwen text encoders, ComfyUI engine, and custom node packs remain the intellectual property and copyright of their respective authors and organizations (MiniMax, Comfy-Org, Alibaba, bruxosdovfx, LBH-123-AI, NyckM).
+- **Scope of Project MIT License:** The MIT License of this repository applies exclusively to our custom workflow orchestration engine, state machine, FFmpeg assembly routines, quality gate verification rules, API server, and CLI tool. Third-party workflow graphs and models are provided for reference and interoperability under their respective upstream terms.

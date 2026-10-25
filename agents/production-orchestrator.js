@@ -145,6 +145,13 @@ class ProductionOrchestrator {
     };
   }
 
+  async createDraftJob(promptOrParams, options = {}) {
+    const params = typeof promptOrParams === 'string'
+      ? { prompt: promptOrParams, ...options }
+      : { ...promptOrParams, ...options };
+    return this.createJob(params);
+  }
+
   async createJob(params = {}) {
     const prompt = String(params.prompt || params.topic || '').trim();
     if (!prompt) {

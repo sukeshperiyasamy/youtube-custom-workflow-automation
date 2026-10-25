@@ -1,4 +1,4 @@
-﻿const http = require('http');
+const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
@@ -12,7 +12,7 @@ class ComfyUIClient {
       : String(baseUrlOrOptions || 'http://127.0.0.1:8188');
     this.baseUrl = rawUrl.replace(/\/+$/, '');
     this.logger = new Logger('ComfyUIClient');
-    this.comfyDir = path.resolve('D:\\comfyui');
+    this.comfyDir = path.resolve(process.env.COMFYUI_DIR || (typeof baseUrlOrOptions === 'object' && baseUrlOrOptions?.comfyDir) || 'D:\\comfyui');
     this.comfyInputDir = path.join(this.comfyDir, 'ComfyUI', 'input');
     this.comfyOutputDir = path.join(this.comfyDir, 'ComfyUI', 'output');
   }
@@ -84,6 +84,10 @@ class ComfyUIClient {
     } catch (_error) {
       return false;
     }
+  }
+
+  async checkHealth() {
+    return this.isAvailable();
   }
 
   async getSystemStats() {
